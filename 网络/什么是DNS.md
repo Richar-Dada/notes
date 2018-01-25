@@ -19,6 +19,7 @@
 - 以ru.wikipedia.org为例，org为顶级域名，wikipedia为二级域名，ru为三级域名，域名树状组织结构如上图所示
 
 ## 域名解析
+![](./images/dns-search.png)
 1. 查找浏览器缓存
 > 浏览器会检查自己的缓存有没有这个域名解析过的IP,如果有,返回IP,没有转发到系统.浏览器缓存是短暂的大小也有限制 
 
@@ -31,6 +32,13 @@
 4. 递归查找
 > 本地服务器没办法命中DNS缓存,本地服务器就询问根域服务器,根域服务器返回`com`域服务器的IP(以`www.igola.com`为例),本地服务器继续询问`com`域服务器,`com`域返回`igola.com`域服务器的IP,本地服务器再问`igola.com`域服务器IP,`igola.com`服务器找到`www.igola.com`的IP,并返回给本地服务器,本地服务器返回给客户端浏览器,解析结束
 
+## 查看DNS解析过程
+DNS的解析过程可以用`dig`命令查看
+```
+dig 域名 +trace
+```
+window的终端没有dig命令,需要安装;Mac和linux的终端都可以直接使用`dig`命令
+
 ## DNS网络优化
 1. DNS预解析
 ```
@@ -39,12 +47,6 @@
 ```
 通过标签告诉浏览器对DNS进行预解析,还可以在APP初始化时,发出请求进行域名预解析(原理是建立缓存)
 
-## 查看DNS解析过程
-DNS的解析过程可以用`dig`命令查看
-```
-dig 域名 +trace
-```
-window的终端没有dig命令,需要安装;Mac和linux的终端都可以直接使用`dig`命令
 
 参考文章
 - http://blog.chinaunix.net/uid-28216282-id-3757849.html
