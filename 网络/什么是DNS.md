@@ -22,9 +22,11 @@
 ![](./images/dns-search.png)
 1. 查找浏览器缓存
 > 浏览器会检查自己的缓存有没有这个域名解析过的IP,如果有,返回IP,没有转发到系统.浏览器缓存是短暂的大小也有限制 
+> 注：我们怎么查看Chrome自身的缓存？可以使用 chrome://net-internals/#dns 来进行查看
 
 2. 查找系统缓存
-> 浏览器缓存没解析过域名,浏览器会查找操作系统缓存.在WINDOW系统,查找的是`C:\Windows\System32\drivers\etc\hosts`文件,在linux查找`/etc/hosts`,如果没有,转发到ISP DNS服务器
+> 浏览器缓存没解析过域名,浏览器会查找操作系统缓存.缓存没找到就会查找hosts文件.在WINDOW系统,查找的是`C:\Windows\System32\drivers\etc\hosts`文件,在linux查找`/etc/hosts`,如果没有,转发到ISP DNS服务器
+> 注：怎么查看操作系统自身的DNS缓存，以Windows系统为例，可以在命令行下使用 ipconfig /displaydns 来进行查看 
 
 3. 查找ISP DNS缓存  
 > ISP DNS服务器是网站设置中设置的服务器,也就是本地区的域名服务器(local DNS),服务器同样在缓存中查找域名的IP,一般到ISP DNS服务器都能完成解析工作,个别无法解析则转发到跟域服务器
