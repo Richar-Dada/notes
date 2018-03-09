@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<script>
+  /**
+   * 1. Observer 通过defineProperty 设置get set  
+   * 2. Watcher  很关键了一点,它会自执行一次,执行过程中,调用了get 于是wathcer实例被放到Dep中保存
+   * 3. 此时数据劫持已经成功了,但set方法调用时,把watcher遍历执行一遍即可完成更新.
+   * 4. watch其实就是一个回调函数,负责对数据更新或者是调用更新方法的, 在Vue中,watch用来调用complile
+  */
+
+  // 定义Oberver
+  function Observer(obj, key, value){
+    console.log(2)
+    var dep = new Dep();
+    if (Object.prototype.toString.call(value) == '[object Object]') {
+      Object.keys(value).forEach(function(key){
+        new Observer(value,key,value[key])
+      })
+    };
+
+    Object.defineProperty(obj, key, {
+      enumerable: true,
+        configurable: true,
+        get: function(){
+          console.log(6)
+          if (Dep.target) {
+            dep.addSub(Dep.target);
+          };
+          return value;
+        },
+        set: function(newVal){
+          console.log('a')
+          value = newVal;
+          dep.notify();
+        }
+    })
+  }
+
+  // 定义Watcher
+  function Watcher(fn){
+    console.log(4)
+    this.update = function(){
+      console.log(5)
+      Dep.target = this;
+      fn();
+      Dep.target = null;
+    }
+    this.update();
+  }
+
+  // 定义Dep
+  function Dep(){
+    this.subs = [];
+
+    this.addSub = function (watcher) {
+      console.log(7)
+      this.subs.push(watcher);
+    }
+
+    this.notify = function(){
+      console.log('b')
+      this.subs.forEach(function(watcher){
+        watcher.update();
+        console.log('c')
+      });
+    }
+  }
+</script>
+<body>
+  <div id="test">test</div>
+</body>
+</html>
+
+<script>
+  var obj = {
+		a: 1,
+		b: 2,
+		c: 3
+	}
+	Object.keys(obj).forEach(function(key){
+    console.log(1)
+		new Observer(obj, key, obj[key])
+	});
+	new Watcher(function(){
+    console.log(3)
+		document.querySelector("#test").innerHTML = obj.a;
+	})
+</script>
