@@ -1,0 +1,6 @@
+## Vue 源码阅读
+Vue初始化流程,大概做了以下事情
+![](./images/init.png)  
+
+数据绑定流程图
+![](./images/databind.png) 
