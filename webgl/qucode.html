@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js misc - ubiquity - test</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				background-color: #ffffff;
+				margin: 0px;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+
+		<script src="./js/three.min.js"></script>
+
+		<script src="./js/Projector.js"></script>
+		<script src="./js/CanvasRenderer.js"></script>
+		<script src="./js/SVGRenderer.js"></script>
+		<script src="./js/SoftwareRenderer.js"></script>
+
+		<script src="./js/stats.min.js"></script>
+
+		<script>
+			var AMOUNT = 100;
+			var stats;
+			var camera, scene;
+			var canvasRenderer, svgRenderer, softwareRenderer, webglRenderer;
+			var mesh, group;
+			init();
+			animate();
+			function init() {
+				var width = window.innerWidth / 2;
+				var height = window.innerHeight / 2;
+				camera = new THREE.PerspectiveCamera( 75, width / height, 0.1, 10000 );
+                // camera = new THREE.OrthographicCamera(-500, 500, 375, 375, 0.1, 10000)
+				camera.position.z = 100;
+				scene = new THREE.Scene();
+				scene.autoUpdate = false;
+				scene.background = new THREE.Color( 0xf0f0f0 );
+				// QRCODE
+                /*
+				var loader = new THREE.JSONLoader();
+				loader.load( '/json/QRCode.json', function ( geometry) {
+                    console.log(THREE.FaceColors)
+					mesh = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { vertexColors: THREE.FaceColors } ) );
+					mesh.scale.x = mesh.scale.y = mesh.scale.z = 1;
+					scene.add( mesh );
+				} );
+                */
+
+                var loader2 = new THREE.JSONLoader();
+                loader2.load( '/json/qiang.json', function ( geometry) {
+					var mesh2 = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { 
+                        color: 0xffff00,
+                        wireframe: true
+                     } ) );
+					mesh2.scale.x = mesh2.scale.y = mesh2.scale.z = 1;
+					scene.add( mesh2 );
+				} );
+				// CUBES
+                /*
+				var cube = new THREE.BoxBufferGeometry( 100, 100, 100 );
+				mesh = new THREE.Mesh( cube, new THREE.MeshBasicMaterial( { color: 0x0000ff, opacity: 0.5, transparent: true } ) );
+				mesh.position.x = 500;
+				mesh.rotation.x = Math.random();
+				mesh.rotation.y = Math.random();
+				mesh.scale.x = mesh.scale.y = mesh.scale.z = 1;
+				scene.add( mesh );
+                */
+				/*
+                mesh = new THREE.Mesh( cube, new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff } ) );
+				mesh.position.x = 500;
+				mesh.position.y = 500;
+				mesh.rotation.x = Math.random();
+				mesh.rotation.y = Math.random();
+				mesh.scale.x = mesh.scale.y = mesh.scale.z = 2;
+				scene.add( mesh );
+                */
+				// PLANE
+                /*
+				mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry( 100, 100 ), new THREE.MeshBasicMaterial( { color: Math.random() * 0xffffff, side: THREE.DoubleSide } ) );
+				mesh.position.y = -100;
+				mesh.scale.x = mesh.scale.y = mesh.scale.z = 1;
+				scene.add( mesh );
+                */
+				// CYLINDER
+                /*
+				mesh = new THREE.Mesh( new THREE.CylinderBufferGeometry( 20, 100, 200, 10 ), new THREE.MeshBasicMaterial( { color: 0xff0000 } ) );
+				mesh.position.x = -500;
+				mesh.rotation.x = - Math.PI / 2;
+				mesh.scale.x = mesh.scale.y = mesh.scale.z = 2;
+				scene.add( mesh );
+                */
+				// POLYFIELD
+				
+				// SPRITES
+                /*
+				var textureLoader = new THREE.TextureLoader();
+				textureLoader.load( 'images/sprite.png', function ( texture ) {
+					var material = new THREE.SpriteMaterial( { map: texture, transparent: true } );
+					for ( var i = 0; i < 50; i ++ ) {
+						var sprite = new THREE.Sprite( material );
+						sprite.position.x = Math.random() * 1000 - 500;
+						sprite.position.y = Math.random() * 1000 - 500;
+						sprite.position.z = Math.random() * 1000 - 500;
+						sprite.scale.set( 64, 64, 1 );
+						scene.add( sprite );
+					}
+				} );
+                */
+                /*
+				for ( var i = 0; i < 50; i ++ ) {
+					var material = new THREE.SpriteMaterial( { color: Math.random() * 0xffffff } );
+					var sprite = new THREE.Sprite( material );
+					sprite.position.x = Math.random() * 1000 - 500;
+					sprite.position.y = Math.random() * 1000 - 500;
+					sprite.position.z = Math.random() * 1000 - 500;
+					sprite.scale.set( 64, 64, 1 );
+					scene.add( sprite );
+				}
+                */
+				// LIGHTS
+				var ambient = new THREE.AmbientLight( 0x80ffff );
+				scene.add( ambient );
+				var directional = new THREE.DirectionalLight( 0xffff00 );
+				directional.position.set( - 1, 0.5, 0 );
+				scene.add( directional );
+
+				canvasRenderer = new THREE.CanvasRenderer();
+				canvasRenderer.setPixelRatio( window.devicePixelRatio );
+				canvasRenderer.setSize( width, height );
+				document.body.appendChild( canvasRenderer.domElement );
+
+				stats = new Stats();
+				document.body.appendChild( stats.dom );
+				//
+				window.addEventListener( 'resize', onWindowResize, false );
+			}
+			function onWindowResize() {
+				var width = window.innerWidth / 2;
+				var height = window.innerHeight / 2;
+				camera.aspect = width / height;
+				camera.updateProjectionMatrix();
+				canvasRenderer.setSize( width, height );
+				svgRenderer.setSize( width, height );
+				softwareRenderer.setSize( width, height );
+				webglRenderer.setSize( width, height );
+			}
+			//
+			function animate() {
+				requestAnimationFrame( animate );
+				render();
+				stats.update();
+			}
+			function render() {
+				var time = Date.now() * 0.0002;
+				camera.position.x = Math.sin( time ) * 500;
+				camera.position.z = Math.cos( time ) * 500;
+				camera.lookAt( scene.position );
+				// group.rotation.x += 0.01;
+				scene.updateMatrixWorld();
+				canvasRenderer.render( scene, camera );
+                drawAxes(scene)
+			}
+
+            function drawAxes(scene) {
+                // x-axis
+                var xGeo = new THREE.Geometry();
+                xGeo.vertices.push(new THREE.Vector3(0, 0, 0));
+                xGeo.vertices.push(new THREE.Vector3(1000, 0, 0));
+                var xMat = new THREE.LineBasicMaterial({
+                    color: 0xff0000
+                });
+                var xAxis = new THREE.Line(xGeo, xMat);
+                scene.add(xAxis);
+                
+                // y-axis
+                var yGeo = new THREE.Geometry();
+                yGeo.vertices.push(new THREE.Vector3(0, 0, 0));
+                yGeo.vertices.push(new THREE.Vector3(0, 1000, 0));
+                var yMat = new THREE.LineBasicMaterial({
+                    color: 0x00ff00
+                });
+                var yAxis = new THREE.Line(yGeo, yMat);
+                scene.add(yAxis);
+                
+                // z-axis
+                var zGeo = new THREE.Geometry();
+                zGeo.vertices.push(new THREE.Vector3(0, 0, 0));
+                zGeo.vertices.push(new THREE.Vector3(0, 0, 1000));
+                var zMat = new THREE.LineBasicMaterial({
+                    color: 0x00ccff
+                });
+                var zAxis = new THREE.Line(zGeo, zMat);
+                scene.add(zAxis);
+            }
+		</script>
+
+	</body>
+</html>

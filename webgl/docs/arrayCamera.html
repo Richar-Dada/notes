@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style >
+        #info{
+            position: absolute;
+            top: 10px;
+            width: 100%;
+            text-align: center;
+            z-index: 100;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <script src="../js/three.min.js"></script>
+    <script>
+        var scene = new THREE.Scene()
+        var cameras = [];
+        var AMOUNT = 6;
+        var SIZE = 1 / AMOUNT;
+        var ASPECT_RATIO = window.innerWidth / window.innerHeight;
+
+        for ( var y = 0; y < AMOUNT; y ++ ) {
+            for ( var x = 0; x < AMOUNT; x ++ ) {
+                var subcamera = new THREE.PerspectiveCamera( 40, ASPECT_RATIO, 0.1, 10 );
+                subcamera.bounds = new THREE.Vector4( x / AMOUNT, y / AMOUNT, SIZE, SIZE );
+                subcamera.position.x = ( x / AMOUNT ) - 0.5;
+                subcamera.position.y = 0.5 - ( y / AMOUNT );
+                subcamera.position.z = 1.5;
+                subcamera.position.multiplyScalar( 2 );
+                subcamera.lookAt( new THREE.Vector3() );
+                subcamera.updateMatrixWorld();
+                cameras.push( subcamera );
+            }
+        }
+        camera = new THREE.ArrayCamera( cameras );
+        camera.position.z = 3;
+
+        var geometry = new THREE.BoxGeometry(1, 1, 1)
+        var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
+        var cube = new THREE.Mesh(geometry, material)
+        scene.add(cube)
+
+        var lineMaterial = new THREE.LineBasicMaterial({ color: 0xff0000 })
+        var lineGeometry = new THREE.Geometry()
+        lineGeometry.vertices.push(new THREE.Vector3(-10, 0, 0))
+        lineGeometry.vertices.push(new THREE.Vector3(0, 10, 0))
+        lineGeometry.vertices.push(new THREE.Vector3(10, 0, 0))
+        var line = new THREE.Line(lineGeometry, lineMaterial)
+        scene.add(line)
+
+        var renderer = new THREE.WebGLRenderer()
+        renderer.setSize(window.innerWidth, window.innerHeight)
+        document.body.appendChild(renderer.domElement)
+
+        function animate(){
+            requestAnimationFrame(animate)
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+            renderer.render(scene, camera)
+        }
+        animate()
+    </script>
+
+    <div id="info">Description</div>
+</body>
+</html>

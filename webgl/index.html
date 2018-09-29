@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js canvas - camera - orthographic</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #f0f0f0;
+				margin: 0px;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+
+		<script src="./js/three.min.js"></script>
+
+		<script src="./js/Projector.js"></script>
+		<script src="./js/CanvasRenderer.js"></script>
+
+		<script src="./js/stats.min.js"></script>
+        <script src="./js/event.js"></script>
+		<script>
+
+			var container, stats;
+			var camera, scene, renderer;
+			var frustumSize = 1000;
+
+			init();
+			animate();
+
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				var info = document.createElement( 'div' );
+				info.style.position = 'absolute';
+				info.style.top = '10px';
+				info.style.width = '100%';
+				info.style.textAlign = 'center';
+				info.innerHTML = '<a href="http://threejs.org" target="_blank" rel="noopener">three.js</a> - orthographic view';
+				container.appendChild( info );
+
+				var aspect = window.innerWidth / window.innerHeight;
+				camera = new THREE.OrthographicCamera( frustumSize * aspect / - 2, frustumSize * aspect / 2, frustumSize / 2, frustumSize / - 2, 1, 2000 );
+				camera.position.y = 600;
+
+				scene = new THREE.Scene();
+				scene.background = new THREE.Color( 0xf0f0f0 );
+
+				// Grid
+
+				var gridHelper = new THREE.GridHelper( 1000, 20 );
+				scene.add( gridHelper );
+
+                renderer = new THREE.CanvasRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				container.appendChild( renderer.domElement );
+
+                const interaction = new THREE.Interaction(renderer, scene, camera);
+				// Cubes
+                var texture = new THREE.TextureLoader().load('./images/crate.gif')
+				var geometry = new THREE.BoxBufferGeometry( 50, 50, 50 );
+                console.log(geometry)
+				var material = new THREE.MeshLambertMaterial( { map: texture } );
+
+				for ( let i = 0; i < 10; i ++ ) {
+
+					var cube = new THREE.Mesh( geometry, material );
+
+					cube.scale.y = Math.floor( Math.random() * 2 + 1 );
+
+					cube.position.x = Math.floor( ( Math.random() * 1000 - 500 ) / 50 ) * 50 + 25;
+					cube.position.y = ( cube.scale.y * 50 ) / 2;
+					cube.position.z = Math.floor( ( Math.random() * 1000 - 500 ) / 50 ) * 50 + 25;
+                    
+					scene.add( cube );
+                    cube.on('click', function(){
+                        alert(i)
+                    })
+				}
+
+                var loader2 = new THREE.JSONLoader();
+                loader2.load( '/json/qiang.js', function ( geometry) {
+                    console.log('aa')
+                    console.log(geometry)
+					var mesh2 = new THREE.Mesh( geometry, new THREE.MeshLambertMaterial( { color: 0xff0000 } ) );
+					mesh2.scale.y = 1;
+                    mesh2.position.y = 50
+                    mesh2.position.x = 50
+                    mesh2.position.z = 50
+					scene.add( mesh2 );
+				} );
+
+				// Lights
+
+				var ambientLight = new THREE.AmbientLight( Math.random() * 0x10 );
+				scene.add( ambientLight );
+
+				var directionalLight = new THREE.DirectionalLight( Math.random() * 0xffffff );
+				directionalLight.position.x = Math.random() - 0.5;
+				directionalLight.position.y = Math.random() - 0.5;
+				directionalLight.position.z = Math.random() - 0.5;
+				directionalLight.position.normalize();
+				scene.add( directionalLight );
+
+				var directionalLight = new THREE.DirectionalLight( Math.random() * 0xffffff );
+				directionalLight.position.x = Math.random() - 0.5;
+				directionalLight.position.y = Math.random() - 0.5;
+				directionalLight.position.z = Math.random() - 0.5;
+				directionalLight.position.normalize();
+				scene.add( directionalLight );
+
+				
+
+				stats = new Stats();
+				container.appendChild( stats.dom );
+
+				//
+
+				window.addEventListener( 'resize', onWindowResize, false );
+
+			}
+
+			function onWindowResize() {
+
+				var aspect = window.innerWidth / window.innerHeight;
+
+				camera.left   = - frustumSize * aspect / 2;
+				camera.right  =   frustumSize * aspect / 2;
+				camera.top    =   frustumSize / 2;
+				camera.bottom = - frustumSize / 2;
+
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			//
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				stats.begin();
+				render();
+				stats.end();
+
+			}
+
+			function render() {
+                
+				var timer = Date.now() * 0.0001;
+
+				camera.position.x = Math.cos( timer ) * 800;
+				camera.position.z = Math.sin( timer ) * 800;
+				camera.lookAt( scene.position );
+                drawAxes(scene)
+				renderer.render( scene, camera );
+
+			}
+
+            function drawAxes(scene) {
+                // x-axis
+                var xGeo = new THREE.Geometry();
+                xGeo.vertices.push(new THREE.Vector3(0, 0, 0));
+                xGeo.vertices.push(new THREE.Vector3(1000, 0, 0));
+                var xMat = new THREE.LineBasicMaterial({
+                    color: 0xff0000
+                });
+                var xAxis = new THREE.Line(xGeo, xMat);
+                scene.add(xAxis);
+                
+                // y-axis
+                var yGeo = new THREE.Geometry();
+                yGeo.vertices.push(new THREE.Vector3(0, 0, 0));
+                yGeo.vertices.push(new THREE.Vector3(0, 1000, 0));
+                var yMat = new THREE.LineBasicMaterial({
+                    color: 0x00ff00
+                });
+                var yAxis = new THREE.Line(yGeo, yMat);
+                scene.add(yAxis);
+                
+                // z-axis
+                var zGeo = new THREE.Geometry();
+                zGeo.vertices.push(new THREE.Vector3(0, 0, 0));
+                zGeo.vertices.push(new THREE.Vector3(0, 0, 1000));
+                var zMat = new THREE.LineBasicMaterial({
+                    color: 0x00ccff
+                });
+                var zAxis = new THREE.Line(zGeo, zMat);
+                scene.add(zAxis);
+            }
+
+		</script>
+
+	</body>
+</html>
