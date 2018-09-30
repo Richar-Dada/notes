@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Document</title>
-    <scirpt src="../js/three.min.js"></scirpt>
+    <script src="../js/three.min.js"></script>
     <style>
         body{
             margin: 0;
@@ -21,26 +21,26 @@
     <script>
         // antialias 是否启用抗锯齿
         var renderer = new THREE.WebGLRenderer({ antialias: true })
-        renderer.setSize(window.innderWidth, window.innerHeight)
+        renderer.setSize(window.innerWidth, window.innerHeight)
         document.body.appendChild(renderer.domElement)
 
         var scene = new THREE.Scene()
-        var camera = new THREE.PerspectiveCamera(45, window.innderWidth / window.innerHeight, 1, 4000)
+        var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 4000)
         camera.position.set(0, 0, 3)
 
         var light = new THREE.DirectionalLight(0xffffff, 1.5)
         light.position.set(0, 0, 1)
         scene.add(light)
 
-        var map = THREE.ImageUtils.loadTexture('../images/disturb.jpg')
+        var texture = new THREE.TextureLoader().load('../images/disturb.jpg')
 
-        var material = new THREE.MeshPhongMaterial({ map: map })
+        var material = new THREE.MeshPhongMaterial({ map: texture })
         var geometry = new THREE.CubeGeometry(1, 1, 1)
         var cube = new THREE.Mesh(geometry, material)
 
         scene.add(cube)
 
-        var rotationBool = true
+        var rotationBool = true;
 
         (function animate(){
             renderer.render(scene, camera)
