@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        html, body{
+            margin: 0;
+            height: 100%;
+        }
+        canvas{
+            display: block;
+        }
+    </style>
+</head>
+<body onload="draw()">
+    
+</body>
+</html>
+
+<script src="../js/three.min.js"></script>
+<script src="../js/controls/OrbitControls.js"></script>
+<script src="../js/stats.min.js"></script>
+<script>
+    var renderer
+    function initRenderer(){
+        renderer = new THREE.WebGLRenderer({ antialias: true })
+        renderer.setSize(window.innerWidth, window.innerHeight)
+        document.body.appendChild(renderer.domElement)
+    }
+
+    var camera
+    function initCamera(){
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 1, 10000)
+        camera.position.set(0, 0, 400)
+    }
+
+    var scene
+    function initScene(){
+        scene = new THREE.Scene()
+    }
+
+    var light
+    function initLight(){
+        scene.add(new THREE.AmbientLight(0x404040))
+
+        light = new THREE.DirectionalLight(0xffffff)
+        light.position.set(1, 1, 1)
+        scene.add(light)
+    }
+
+    var fontModel
+    function initModel(){
+        var font
+        var loader = new THREE.FontLoader()
+        loader.load('../fonts/gentilis_regular.typeface.json', function(res){
+            font = new THREE.TextBufferGeometry('fdsfasd', {
+                font: res,
+                size: 100,
+                height: 60
+            })
+
+            font.computeBoundingBox()
+
+            var map = new THREE.TextureLoader().load('../images/UV_Grid_Sm.jpg')
+            var material = new THREE.MeshLambertMaterial({ map: map, side: THREE.DoubleSide })
+
+            fontModel = new THREE.Mesh(font, material)
+
+            fontModel.position.x = -(font.boundingBox.max.x - font.boundingBox.min.x) / 2
+            fontModel.position.y = -50
+            fontModel.position.z = -30
+
+            scene.add(fontModel)
+        })
+    }
+
+    var stats
+    function initStats(){
+        stats = new Stats()
+        document.body.appendChild(stats.dom)
+    }
+
+    var controls
+    function initControls(){
+        controls = new THREE.OrbitControls(camera, renderer.domElement)
+        controls.enableDamping = true
+        controls.enableZoom = true
+        controls.autoRotate = false
+        controls.minDistance = 200
+        controls.maxDistance = 600
+        controls.enablePan = true
+    }
+
+    function render(){
+        renderer.render(scene, camera)
+    }
+
+    function onWindowResize(){
+        camera.aspect = window.innerWidth / window.innerHeight
+        camera.updateProjectionMatrix()
+        render()
+        renderer.setSize(window.innerWidth, window.innerWidth)
+    }
+
+    function animate(){
+        controls.update()
+        render()
+        stats.update()
+        requestAnimationFrame(animate)
+    }
+
+    function draw(){
+        initRenderer()
+        initScene()
+        initCamera()
+        initLight()
+        initModel()
+        initControls()
+        initStats()
+        animate()
+        window.onresize = onWindowResize
+    }
+</script>
