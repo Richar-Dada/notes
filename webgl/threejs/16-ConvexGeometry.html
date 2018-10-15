@@ -18,6 +18,7 @@
     <script src="../js/QuickHull.js"></script>
     <script src="../js/geometries/ConvexGeometry.js"></script>
     <script src="../js/controls/OrbitControls.js"></script>
+    <script src="../js/utils/SceneUtils.js"></script>
     <script src="../js/stats.min.js"></script>
     <script src="../js/lib/dat.gui.min.js"></script>
 </head>
@@ -89,11 +90,15 @@
     }
 
     function createMesh(geom){
+        // 实例化一个绿色半透明材质
         var meshMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.2 })
+        // 将材质设置成正反面都可见
         meshMaterial.side = THREE.DoubleSide
         var wireFrameMat = new THREE.MeshBasicMaterial()
+        // 把材质渲染成线框
         wireFrameMat.wireframe = true
 
+        // 讲两种材质都赋给几何体
         var mesh = THREE.SceneUtils.createMultiMaterialObject(geom, [ meshMaterial, wireFrameMat ])
         return mesh
     }
@@ -110,6 +115,7 @@
     function initControls() {
 
         controls = new THREE.OrbitControls( camera, renderer.domElement );
+        console.log(controls)
 
         // 如果使用animate方法时，将此函数删除
         //controls.addEventListener( 'change', render );
@@ -155,125 +161,18 @@
     }
 
     function draw() {
+        
         initRender();
         initScene();
         initCamera();
         initLight();
         initModel();
         initStats();
+        initControls()
 
         animate();
         window.onresize = onWindowResize;
     }
 
-
-    //高斯帕曲线生成函数gosper(密度, 大小)，也被称为flowsnake（一首音误的雪花），是一种空间填充曲线。它是一个与龙曲线和希尔伯特曲线相似的分形物体。
-    function gosper(a, b) {
-
-        var turtle = [0, 0, 0];
-        var points = [];
-        var count = 0;
-
-        rg(a, b, turtle);
-
-
-        return points;
-
-        function rt(x) {
-            turtle[2] += x;
-        }
-
-        function lt(x) {
-            turtle[2] -= x;
-        }
-
-        function fd(dist) {
-//                ctx.beginPath();
-            points.push({x: turtle[0], y: turtle[1], z: Math.sin(count) * 5});
-//                ctx.moveTo(turtle[0], turtle[1]);
-
-            var dir = turtle[2] * (Math.PI / 180);
-            turtle[0] += Math.cos(dir) * dist;
-            turtle[1] += Math.sin(dir) * dist;
-
-            points.push({x: turtle[0], y: turtle[1], z: Math.sin(count) * 5});
-//                ctx.lineTo(turtle[0], turtle[1]);
-//                ctx.stroke();
-
-        }
-
-        function rg(st, ln, turtle) {
-
-            st--;
-            ln = ln / 2.6457;
-            if (st > 0) {
-//                    ctx.strokeStyle = '#111';
-                rg(st, ln, turtle);
-                rt(60);
-                gl(st, ln, turtle);
-                rt(120);
-                gl(st, ln, turtle);
-                lt(60);
-                rg(st, ln, turtle);
-                lt(120);
-                rg(st, ln, turtle);
-                rg(st, ln, turtle);
-                lt(60);
-                gl(st, ln, turtle);
-                rt(60);
-            }
-            if (st == 0) {
-                fd(ln);
-                rt(60);
-                fd(ln);
-                rt(120);
-                fd(ln);
-                lt(60);
-                fd(ln);
-                lt(120);
-                fd(ln);
-                fd(ln);
-                lt(60);
-                fd(ln);
-                rt(60)
-            }
-        }
-
-        function gl(st, ln, turtle) {
-            st--;
-            ln = ln / 2.6457;
-            if (st > 0) {
-//                    ctx.strokeStyle = '#555';
-                lt(60);
-                rg(st, ln, turtle);
-                rt(60);
-                gl(st, ln, turtle);
-                gl(st, ln, turtle);
-                rt(120);
-                gl(st, ln, turtle);
-                rt(60);
-                rg(st, ln, turtle);
-                lt(120);
-                rg(st, ln, turtle);
-                lt(60);
-                gl(st, ln, turtle);
-            }
-            if (st == 0) {
-                lt(60);
-                fd(ln);
-                rt(60);
-                fd(ln);
-                fd(ln);
-                rt(120);
-                fd(ln);
-                rt(60);
-                fd(ln);
-                lt(120);
-                fd(ln);
-                lt(60);
-                fd(ln);
-            }
-        }
-    }
 </script>
 
