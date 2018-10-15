@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            height: 100%;
+        }
+        canvas{
+            display: block;
+        }
+    </style>
+    <script src="../js/three.min.js"></script>
+    <script src="../js/QuickHull.js"></script>
+    <script src="../js/geometries/ConvexGeometry.js"></script>
+    <script src="../js/controls/OrbitControls.js"></script>
+    <script src="../js/stats.min.js"></script>
+    <script src="../js/lib/dat.gui.min.js"></script>
+</head>
+<body onload="draw()">
+    
+</body>
+</html>
+
+<script>
+    var renderer;
+    function initRender() {
+        renderer = new THREE.WebGLRenderer({antialias: true});
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        //告诉渲染器需要阴影效果
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // 默认的是，没有设置的这个清晰 THREE.PCFShadowMap
+        document.body.appendChild(renderer.domElement);
+    }
+
+    var camera;
+    function initCamera() {
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000);
+        camera.position.set(0, 0, 600);
+    }
+
+    var scene;
+    function initScene() {
+        scene = new THREE.Scene();
+    }
+
+
+    var ambientLight,light;
+    function initLight() {
+        ambientLight = new THREE.AmbientLight(0x040404);
+        scene.add(ambientLight);
+
+        light = new THREE.DirectionalLight(0xffffff);
+        light.position.set(1, 1, 1);
+        scene.add(light);
+    }
+
+    var line
+    function initModel(){
+        var points = gosper(3, 60)
+
+        var geometry = new THREE.Geometry()
+        var colors = []
+        for(var i = 0, len = points.length; i<len; i++){
+            var e = points[i]
+            geometry.vertices.push(new THREE.Vector3(e.x, e.z, e.y))
+            colors[i] = new THREE.Color(0xffffff)
+            colors[i].setHSL(e.x / 100 + 0.5, (e.y * 20) / 300, 0.8)
+        }
+        geometry.colors = colors
+
+        // geometry.computeLineDistances()
+        var material = new THREE.LineDashedMaterial({
+            vertexColors: true,
+            color: 0xffffff,
+            dashSize: 2,
+            gapSize: 2,
+            scale: 5
+        })
+        /*
+        var material = new THREE.LineBasicMaterial({
+            opacity: 1.0,
+            linewidth: 1,
+            vertexColors: THREE.VertexColors
+        })
+        */
+
+        line = new THREE.Line(geometry, material)
+        // LineDashedMaterial必需搭配computeLineDistances
+        line.computeLineDistances()
+        line.position.set(0, 0, -60)
+        scene.add(line)
+    }
+
+    //初始化性能插件
+    var stats;
+    function initStats() {
+        stats = new Stats();
+        document.body.appendChild(stats.dom);
+    }
+
+    var step = 0;
+    function render() {
+
+        //设置模型动画
+        line.rotation.z = step += 0.01;
+        line.rotation.y = step += 0.01;
+
+        renderer.render(scene, camera);
+    }
+
+    //窗口变动触发的函数
+    function onWindowResize() {
+
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        render();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+
+    }
+
+    function animate() {
+        //更新控制器
+        render();
+
+        //更新性能插件
+        stats.update();
+
+        requestAnimationFrame(animate);
+    }
+
+    function draw() {
+        initGui();
+        initRender();
+        initScene();
+        initCamera();
+        initLight();
+        initModel();
+        initStats();
+
+        animate();
+        window.onresize = onWindowResize;
+    }
+
+
+    //高斯帕曲线生成函数gosper(密度, 大小)，也被称为flowsnake（一首音误的雪花），是一种空间填充曲线。它是一个与龙曲线和希尔伯特曲线相似的分形物体。
+    function gosper(a, b) {
+
+        var turtle = [0, 0, 0];
+        var points = [];
+        var count = 0;
+
+        rg(a, b, turtle);
+
+
+        return points;
+
+        function rt(x) {
+            turtle[2] += x;
+        }
+
+        function lt(x) {
+            turtle[2] -= x;
+        }
+
+        function fd(dist) {
+//                ctx.beginPath();
+            points.push({x: turtle[0], y: turtle[1], z: Math.sin(count) * 5});
+//                ctx.moveTo(turtle[0], turtle[1]);
+
+            var dir = turtle[2] * (Math.PI / 180);
+            turtle[0] += Math.cos(dir) * dist;
+            turtle[1] += Math.sin(dir) * dist;
+
+            points.push({x: turtle[0], y: turtle[1], z: Math.sin(count) * 5});
+//                ctx.lineTo(turtle[0], turtle[1]);
+//                ctx.stroke();
+
+        }
+
+        function rg(st, ln, turtle) {
+
+            st--;
+            ln = ln / 2.6457;
+            if (st > 0) {
+//                    ctx.strokeStyle = '#111';
+                rg(st, ln, turtle);
+                rt(60);
+                gl(st, ln, turtle);
+                rt(120);
+                gl(st, ln, turtle);
+                lt(60);
+                rg(st, ln, turtle);
+                lt(120);
+                rg(st, ln, turtle);
+                rg(st, ln, turtle);
+                lt(60);
+                gl(st, ln, turtle);
+                rt(60);
+            }
+            if (st == 0) {
+                fd(ln);
+                rt(60);
+                fd(ln);
+                rt(120);
+                fd(ln);
+                lt(60);
+                fd(ln);
+                lt(120);
+                fd(ln);
+                fd(ln);
+                lt(60);
+                fd(ln);
+                rt(60)
+            }
+        }
+
+        function gl(st, ln, turtle) {
+            st--;
+            ln = ln / 2.6457;
+            if (st > 0) {
+//                    ctx.strokeStyle = '#555';
+                lt(60);
+                rg(st, ln, turtle);
+                rt(60);
+                gl(st, ln, turtle);
+                gl(st, ln, turtle);
+                rt(120);
+                gl(st, ln, turtle);
+                rt(60);
+                rg(st, ln, turtle);
+                lt(120);
+                rg(st, ln, turtle);
+                lt(60);
+                gl(st, ln, turtle);
+            }
+            if (st == 0) {
+                lt(60);
+                fd(ln);
+                rt(60);
+                fd(ln);
+                fd(ln);
+                rt(120);
+                fd(ln);
+                rt(60);
+                fd(ln);
+                lt(120);
+                fd(ln);
+                lt(60);
+                fd(ln);
+            }
+        }
+    }
+</script>
+
