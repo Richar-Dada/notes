@@ -59,41 +59,43 @@
         scene.add(light);
     }
 
-    var line
     function initModel(){
-        var points = gosper(3, 60)
+        generatePoints()
+    }
 
-        var geometry = new THREE.Geometry()
-        var colors = []
-        for(var i = 0, len = points.length; i<len; i++){
-            var e = points[i]
-            geometry.vertices.push(new THREE.Vector3(e.x, e.z, e.y))
-            colors[i] = new THREE.Color(0xffffff)
-            colors[i].setHSL(e.x / 100 + 0.5, (e.y * 20) / 300, 0.8)
+    function generatePoints(){
+        var points = []
+        for(var i = 0; i < 20; i++){
+            var randomX = -150 + Math.round(Math.random() * 300)
+            var randomY = -150 + Math.round(Math.random() * 300)
+            var randomZ = -150 + Math.round(Math.random() * 300)
+
+            points.push(new THREE.Vector3(randomX, randomY, randomZ))
         }
-        geometry.colors = colors
 
-        // geometry.computeLineDistances()
-        var material = new THREE.LineDashedMaterial({
-            vertexColors: true,
-            color: 0xffffff,
-            dashSize: 2,
-            gapSize: 2,
-            scale: 5
+        spGroup = new THREE.Object3D()
+        var material = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: false })
+        points.forEach(function(point){
+            var spGeom = new THREE.SphereGeometry(2)
+            var spMesh = new THREE.Mesh(spGeom, material)
+            spMesh.position.copy(point)
+            scene.add(spMesh)
         })
-        /*
-        var material = new THREE.LineBasicMaterial({
-            opacity: 1.0,
-            linewidth: 1,
-            vertexColors: THREE.VertexColors
-        })
-        */
+        scene.add(spGroup)
 
-        line = new THREE.Line(geometry, material)
-        // LineDashedMaterial必需搭配computeLineDistances
-        line.computeLineDistances()
-        line.position.set(0, 0, -60)
-        scene.add(line)
+        var hullGeometry = new THREE.ConvexGeometry(points)
+        hullMesh = createMesh(hullGeometry)
+        scene.add(hullMesh)
+    }
+
+    function createMesh(geom){
+        var meshMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 0.2 })
+        meshMaterial.side = THREE.DoubleSide
+        var wireFrameMat = new THREE.MeshBasicMaterial()
+        wireFrameMat.wireframe = true
+
+        var mesh = THREE.SceneUtils.createMultiMaterialObject(geom, [ meshMaterial, wireFrameMat ])
+        return mesh
     }
 
     //初始化性能插件
@@ -103,13 +105,31 @@
         document.body.appendChild(stats.dom);
     }
 
-    var step = 0;
+    //用户交互插件 鼠标左键按住旋转，右键按住平移，滚轮缩放
+    var controls;
+    function initControls() {
+
+        controls = new THREE.OrbitControls( camera, renderer.domElement );
+
+        // 如果使用animate方法时，将此函数删除
+        //controls.addEventListener( 'change', render );
+        // 使动画循环使用时阻尼或自转 意思是否有惯性
+        controls.enableDamping = true;
+        //动态阻尼系数 就是鼠标拖拽旋转灵敏度
+        //controls.dampingFactor = 0.25;
+        //是否可以缩放
+        controls.enableZoom = true;
+        //是否自动旋转
+        controls.autoRotate = true;
+        //设置相机距离原点的最远距离
+        controls.minDistance  = 200;
+        //设置相机距离原点的最远距离
+        controls.maxDistance  = 1600;
+        //是否开启右键拖拽
+        controls.enablePan = true;
+    }
+
     function render() {
-
-        //设置模型动画
-        line.rotation.z = step += 0.01;
-        line.rotation.y = step += 0.01;
-
         renderer.render(scene, camera);
     }
 
@@ -124,6 +144,7 @@
     }
 
     function animate() {
+        controls.update()
         //更新控制器
         render();
 
@@ -134,7 +155,6 @@
     }
 
     function draw() {
-        initGui();
         initRender();
         initScene();
         initCamera();
