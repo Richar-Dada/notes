@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            height: 100%;
+        }
+
+        canvas{
+            display: block;
+        }
+    </style>
+</head>
+<body onload="draw()">
+    
+</body>
+</html>
+<script src="../js/three.min.js"></script>
+<script src="../js/controls/OrbitControls.js"></script>
+<script src="../js/stats.min.js"></script>
+<script src="../js/lib/dat.gui.min.js"></script>
+<script src="../js/utils/SceneUtils.js"></script>
+<script>
+    var renderer
+    function initRender(){
+        renderer = new THREE.WebGLRenderer({ antialias: true })
+        renderer.setSize(window.innerWidth, window.innerHeight)
+        document.body.appendChild(renderer.domElement)
+    }
+
+    var camera
+    function initCamera(){
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 1, 10000)
+        camera.position.set(0, 0, 100)
+    }
+
+    var scene
+    function initScene(){
+        scene = new THREE.Scene()
+    }
+
+    var light
+    function initLight(){
+        scene.add(new THREE.AmbientLight(0x040404))
+
+        light = new THREE.DirectionalLight(0xffffff)
+        light.position.set(1, 1, 1)
+        scene.add(light)
+    }
+
+    function drawShape(){
+        var shape = new THREE.Shape()
+        // 点移动到某个位置
+        shape.moveTo(20, 10)
+        // 点绘制到某个位置
+        shape.lineTo(20, 40)
+        // 根据提供的参数绘制一条曲线。相关说明可以参考钱一行的内容。该曲线的绘制局域两个定义曲线的坐标(aCPx1和aCPy1,aCPx2和aCPy2)以及终点坐标(x和y)。起始点是路径的当前位置
+        shape.bezierCurveTo(15, 25, -5, 25, -30, 40)
+
+        // 该函数沿着提供的坐标集合pts绘制一条光滑曲线。这个参数应该是一个THREE.Vector2对象数组。起始点是路径的相对位置
+        shape.splineThru(
+            [
+                new THREE.Vector2(-22, 30),
+                new THREE.Vector2(-18, 20),
+                new THREE.Vector2(-20, 10)
+            ]
+        )
+
+        shape.quadraticCurveTo(0, -15, 20, 10)
+
+        var hole1 = new THREE.Path()
+        hole1.absellipse(6, 20, 2, 3, 0, Math.PI * 2, true)
+        shape.holes.push(hole1)
+
+        var hole2 = new THREE.Path()
+        hole2.absellipse(-10, 20, 2, 3, 0, Math.PI * 2, true)
+        shape.holes.push(hole2)
+
+        var hole3 = new THREE.Path()
+        hole3.absarc(0, 5, 2, 0, Math.PI, true)
+        shape.holes.push(hole3)
+
+        return shape
+    }
+
+    function createMesh(geom){
+        geom.applyMatrix(new THREE.Matrix4().makeTranslation(0, -20, 0))
+
+        var meshMaterial = new THREE.MeshNormalMaterial({
+            flatShading: THREE.FlatShading,
+            transparent: true,
+            opacity: 0.7
+        })
+
+        var wireFrameMat = new THREE.MeshBasicMaterial()
+        wireFrameMat.wireframe = true
+
+        var mesh = THREE.SceneUtils.createMultiMaterialObject(geom, [ meshMaterial, wireFrameMat ])
+        return mesh
+    }
+
+    var stats
+    function initStats(){
+        stats = new Stats()
+        document.body.appendChild(stats.dom)
+    }
+
+    var controls
+    function initControls(){
+        controls = new THREE.OrbitControls(camera, renderer.domElement)
+
+        controls.enableDamping = true
+        controls.enableZoom = true
+        controls.autoRotate = false
+        controls.minDistance = 20
+        controls.maxDistance = 160
+        controls.enablePan = true
+    }
+
+    var gui, shape
+    function initGui(){
+        gui = {
+            amount: 2,
+            bevelThickness: 2,
+            bevelSize: 0.5,
+            bevelEnabled: true,
+            bevelSegments: 3,
+            curveSegments: 12,
+            steps: 1,
+            asGeom: function(){
+                scene.remove(shape)
+                var options = {
+                    amount: gui.amount,
+                    bevelThickness: gui.bevelThickness,
+                    bevelSize: gui.bevelSize,
+                    bevelSegments: gui.bevelSegments,
+                    bevelEnabled: gui.bevelEnabled,
+                    curveSegments: gui.curveSegments,
+                    steps: gui.steps
+                }
+                shape = createMesh(new THREE.ExtrudeGeometry(drawShape(), options))
+                scene.add(shape)
+            }
+        }
+        var datGui = new dat.GUI()
+        datGui.add(gui, 'amount', 0, 20).onChange(gui.asGeom)
+        datGui.add(gui, 'bevelThickness', 0, 10).onChange(gui.asGeom)
+        datGui.add(gui, 'bevelSize', 0, 10).onChange(gui.asGeom)
+        datGui.add(gui, 'bevelSegments', 0, 30).onChange(gui.asGeom)
+        datGui.add(gui, 'bevelEnabled').onChange(gui.asGeom)
+        datGui.add(gui, 'curveSegments', 1, 30).step(1).onChange(gui.asGeom)
+        datGui.add(gui, 'steps', 1, 5).step(1).onChange(gui.asGeom)
+        // 调用生成图形
+        gui.asGeom()
+    }
+    
+    function render(){
+        renderer.render(scene, camera)
+    }
+
+    function onWindowResize(){
+        camera.aspect = window.innerWidth / window.innerHeight
+        camera.updateProjectionMatrix()
+        render()
+        renderer.setSize(window.innerWidth, window.innerHeight)
+    }
+
+    function animate(){
+        controls.update()
+        render()
+        stats.update()
+        requestAnimationFrame(animate)
+    }
+
+    function draw(){
+        initRender()
+        initScene()
+        initCamera()
+        initLight()
+        initControls()
+        initStats()
+        initGui()
+        animate()
+        window.onresize = onWindowResize
+    }
+</script>

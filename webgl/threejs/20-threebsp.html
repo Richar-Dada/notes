@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            height: 100%;
+        }
+
+        canvas{
+            display: block;
+        }
+    </style>
+</head>
+<body onload="draw()">
+    
+</body>
+</html>
+<script src="../js/three.min.js"></script>
+<script src="../js/lib/threebsp.js"></script>
+<script src="../js/controls/OrbitControls.js"></script>
+<script src="../js/stats.min.js"></script>
+<script src="../js/lib/dat.gui.min.js"></script>
+<script>
+    var renderer
+    function initRender(){
+        renderer = new THREE.WebGLRenderer({ antialias: true })
+        renderer.setSize(window.innerWidth, window.innerHeight)
+        document.body.appendChild(renderer.domElement)
+    }
+
+    var camera
+    function initCamera(){
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 1, 10000)
+        camera.position.set(0, 0, 100)
+    }
+
+    var scene
+    function initScene(){
+        scene = new THREE.Scene()
+    }
+
+    var light
+    function initLight(){
+        scene.add(new THREE.AmbientLight(0x040404))
+
+        light = new THREE.DirectionalLight(0xffffff)
+        light.position.set(1, 1, 1)
+        scene.add(light)
+    }
+
+    function initModel(){
+        var object = new THREE.AxesHelper(500)
+        scene.add(object)
+
+        var sphereGeometry = new THREE.SphereGeometry(50, 20, 20)
+        var sphere = createMesh(sphereGeometry)
+
+        var cubeGeometry = new THREE.BoxGeometry(30, 30, 30)
+        var cube = createMesh(cubeGeometry)
+        cube.position.x = -50
+
+        var sphereBSP = new ThreeBSP(sphere)
+        var cubeBSP = new ThreeBSP(cube)
+
+        var resultBSP = sphereBSP.subtract(cubeBSP)
+
+        var result = resultBSP.toMesh()
+
+        result.geometry.computeFaceNormals()
+        result.geometry.computeVertexNormals()
+
+        var material = new THREE.MeshPhongMaterial({ color: 0x00ffff })
+        result.material = material
+
+        scene.add(sphere)
+        scene.add(cube)
+        scene.add(result)
+    }
+
+    function createMesh(geom){
+        var meshMaterial = new THREE.MeshNormalMaterial({
+            flatShading: THREE.FlatShading,
+            transparent: true,
+            opacity: 0.9
+        })
+
+        var wireFrameMat = new THREE.MeshBasicMaterial({ opacity: 0.5, wireframeLinewidth: 0.5 })
+        wireFrameMat.wireFrame = true
+
+        var mesh = new THREE.Mesh(geom, wireFrameMat)
+        return mesh
+    }
+
+    var stats
+    function initStats(){
+        stats = new Stats()
+        document.body.appendChild(stats.dom)
+    }
+
+    var controls
+    function initControls(){
+        controls = new THREE.OrbitControls(camera, renderer.domElement)
+
+        controls.enableDamping = true
+        controls.enableZoom = true
+        controls.autoRotate = false
+        controls.minDistance = 20
+        controls.maxDistance = 10000
+        controls.enablePan = true
+    }
+    
+    var gui
+    function initGui(){
+        gui = {}
+        var datGui = new dat.GUI()
+    }
+
+    function render(){
+        renderer.render(scene, camera)
+    }
+
+    function onWindowResize(){
+        camera.aspect = window.innerWidth / window.innerHeight
+        camera.updateProjectionMatrix()
+        render()
+        renderer.setSize(window.innerWidth, window.innerHeight)
+    }
+
+    function animate(){
+        controls.update()
+        render()
+        stats.update()
+        requestAnimationFrame(animate)
+    }
+
+    function draw(){
+        initRender()
+        initScene()
+        initCamera()
+        initLight()
+        initModel()
+        initControls()
+        initStats()
+        initGui()
+        animate()
+        window.onresize = onWindowResize
+    }
+</script>

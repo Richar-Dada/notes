@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        html,body{
+            margin: 0;
+            height: 100%;
+        }
+
+        canvas{
+            display: block;
+        }
+    </style>
+</head>
+<body onload="draw()">
+    
+</body>
+</html>
+<script src="../js/three.min.js"></script>
+<script src="../js/controls/OrbitControls.js"></script>
+<script src="../js/stats.min.js"></script>
+<script src="../js/lib/dat.gui.min.js"></script>
+<script>
+    var renderer
+    function initRender(){
+        renderer = new THREE.WebGLRenderer({ antialias: true })
+        renderer.setSize(window.innerWidth, window.innerHeight)
+        document.body.appendChild(renderer.domElement)
+    }
+
+    var camera
+    function initCamera(){
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 1, 10000)
+        camera.position.set(0, 0, 500)
+    }
+
+    var scene
+    function initScene(){
+        scene = new THREE.Scene()
+    }
+
+    var light
+    function initLight(){
+        scene.add(new THREE.AmbientLight(0x040404))
+
+        light = new THREE.DirectionalLight(0xffffff)
+        light.position.set(1, 1, 1)
+        scene.add(light)
+    }
+
+    function initModel(){
+        var object = new THREE.AxesHelper(500)
+        scene.add(object)
+
+        var material = new THREE.SpriteMaterial()
+
+        for(var x = -5; x <= 5; x ++){
+            for(var y = -5; y <= 5; y ++){
+                var sprite = new THREE.Sprite(material)
+                sprite.position.set(x * 10, y * 10, 0)
+                scene.add(sprite)
+            }
+        }
+    }
+
+    var stats
+    function initStats(){
+        stats = new Stats()
+        document.body.appendChild(stats.dom)
+    }
+
+    var controls
+    function initControls(){
+        controls = new THREE.OrbitControls(camera, renderer.domElement)
+
+        controls.enableDamping = true
+        controls.enableZoom = true
+        controls.autoRotate = false
+        controls.minDistance = 20
+        controls.maxDistance = 160
+        controls.enablePan = true
+    }
+    
+    function render(){
+        renderer.render(scene, camera)
+    }
+
+    function onWindowResize(){
+        camera.aspect = window.innerWidth / window.innerHeight
+        camera.updateProjectionMatrix()
+        render()
+        renderer.setSize(window.innerWidth, window.innerHeight)
+    }
+
+    function animate(){
+        controls.update()
+        render()
+        stats.update()
+        requestAnimationFrame(animate)
+    }
+
+    function draw(){
+        initRender()
+        initScene()
+        initCamera()
+        initLight()
+        initModel()
+        initControls()
+        initStats()
+        animate()
+        window.onresize = onWindowResize
+    }
+</script>
