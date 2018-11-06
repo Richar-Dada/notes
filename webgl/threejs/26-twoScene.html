@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        html, body{
+            margin: 0;
+            height: 100%;
+        }
+        canvas{
+            display: block;
+        }
+    </style>
+</head>
+<body onload="draw()">
+    
+</body>
+</html>
+<script src="../js/three.min.js"></script>
+<script src="../js/stats.min.js"></script>
+<script src="../js/lib/dat.gui.min.js"></script>
+<script>
+    var renderer
+    function initRender(){
+        renderer = new THREE.WebGLRenderer({ antialias: true })
+        renderer.setClearColor(new THREE.Color(0xffffff))
+        renderer.setSize(window.innerWidth, window.innerHeight)
+        document.body.appendChild(renderer.domElement)
+    }
+
+    var camera,cameraOrtho
+    function initCamera(){
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 200)
+        camera.position.set(0, 0, 50)
+        cameraOrtho = new THREE.OrthographicCamera(0, window.innerWidth, window.innerHeight, 0, -10, 10)
+    }
+
+    var scene, sceneOrtho
+    function initScene(){
+        scene = new THREE.Scene()
+        sceneOrtho = new THREE.Scene()
+    }
+
+    var light
+    function initLight(){
+        scene.add(new THREE.AmbientLight(0x404040))
+
+        light = new THREE.DirectionalLight(0xffffff)
+        light.position.set(1, 1, 1)
+        scene.add(light)
+    }
+
+    function initModel(){
+        var object = new THREE.AxesHelper(500)
+
+        var material = new THREE.MeshNormalMaterial()
+        var geom = new THREE.SphereGeometry(15, 200, 200)
+        var mesh = new THREE.Mesh(geom, material)
+
+        scene.add(mesh)
+    }
+
+    var getTexture = function () {
+        var texture = new THREE.ImageUtils.loadTexture()
+        return texture
+    }
+
+    var stats
+    function initStats(){
+        stats = new Stats()
+        document.body.appendChild(stats.dom)
+    }
+
+    var gui
+    function initGui(){
+        gui = {
+            "size": 50,
+            "sprite": 0,
+            "transparent": true,
+            "opacity": 0.6,
+            "color": 0xffffff,
+            "rotateSystem": true,
+            redraw: function(){
+                sceneOrtho.children.forEach(function(child){
+                    if(child instanceof THREEE.Sprite) sceneOrtho.remove(child)
+                })
+                createSprite(gui.size, gui.transparent, gui.opacity, gui.color, gui.sprite)
+            }
+        }
+        var datGui = new dat.GUI()
+        datGui.add(gui, 'sprite', 0, 4).step(1).onChange(gui.redraw)
+        datGui.add(gui, 'size', 0, 120).onChange(gui.redraw)
+        datGui.add(gui, 'transparent').onChange(gui.redraw)
+        datGui.add(gui, 'opacity', 0, 1).onChange(gui.redraw)
+        datGui.addColor(gui, 'color').onChange(gui.redraw)
+        gui.redraw()
+    }
+
+    function createSprite(size, transparent, opacity, color, spriteNumber){
+        var spriteMaterial = new THREE.SpriteMaterial({
+            opacity: opacity,
+            color: color,
+            transparent: transparent,
+            map: getTexture()
+        })
+
+        spriteMaterial.map.offset = new THREE.Vector2(0.2 * spriteNumber, 0)
+        spriteMaterial.map.repeat = new THREE.Vector2(1 / 5, 1)
+        spriteMaterial.depthTest = false
+
+        spriteMaterial.blending = THREE.AdditiveBlending
+
+        var sprite = new THREE.Sprite(spriteMaterial)
+        sprite.scale.set(size, size, size)
+        sprite.position.set(1000, size / 2, 0)
+        sprite.velocityX = 5
+
+        sceneOrtho.add(sprite)
+    }
+
+    var step = 0
+    function render(){
+        stats.update()
+
+        camera.position.y = Math.sin(step += 0.01) * 20
+
+        sceneOrtho.children.forEach(function(e){
+            e.position.x = e.position.x + e.velocityX
+            if(e.position.x > window.innerWidth){
+                e.velocityX = -5
+                gui.sprite ++
+                e.material.map.offset.set(1 / 5 * (gui.sprite % 4), 0)
+            }
+            if(e.position.x < 0){
+                e.velocityX = 5
+            }
+        })
+
+        renderer.render(scene, camera)
+        renderer.autoClear = false
+        renderer.render(sceneOrtho, cameraOrtho)
+    }
+
+    function onWindowResize(){
+        camera.aspect = window.innerWidth / window.innerHeight
+        camera.updateProjectionMatrix()
+
+        cameraOrtho.right = window.innerWidth
+        cameraOrtho.top = window.innerHeight
+        cameraOrtho.updateProjectionMatrix()
+
+        render()
+        renderer.setSize(window.innerWidth, window.innerHeight)
+    }
+
+    function animate(){
+        render()
+        stats.update()
+        requestAnimationFrame(animate)
+    }
+
+    function draw(){
+        initRender()
+        initScene()
+        initCamera()
+        initLight()
+        initModel()
+        initStats()
+        initGui()
+
+        animate()
+        window.onresize = onWindowResize
+    }
+</script>
