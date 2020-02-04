@@ -64,10 +64,14 @@
 
     function drawShape(){
         var shape = new THREE.Shape()
+        // 点移动到某个位置
         shape.moveTo(20, 10)
+        // 点绘制到某个位置
         shape.lineTo(20, 40)
+        // 根据提供的参数绘制一条曲线。相关说明可以参考钱一行的内容。该曲线的绘制局域两个定义曲线的坐标(aCPx1和aCPy1,aCPx2和aCPy2)以及终点坐标(x和y)。起始点是路径的当前位置
         shape.bezierCurveTo(15, 25, -5, 25, -30, 40)
 
+        // 该函数沿着提供的坐标集合pts绘制一条光滑曲线。这个参数应该是一个THREE.Vector2对象数组。起始点是路径的相对位置
         shape.splineThru(
             [
                 new THREE.Vector2(-22, 30),

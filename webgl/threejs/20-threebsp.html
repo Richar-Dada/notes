@@ -57,23 +57,29 @@
         var object = new THREE.AxesHelper(500)
         scene.add(object)
 
+        // 创建球体
         var sphereGeometry = new THREE.SphereGeometry(50, 20, 20)
         var sphere = createMesh(sphereGeometry)
 
+        // 创建立方体
         var cubeGeometry = new THREE.BoxGeometry(30, 30, 30)
         var cube = createMesh(cubeGeometry)
         cube.position.x = -50
 
+        // 生成ThreeBSP
         var sphereBSP = new ThreeBSP(sphere)
         var cubeBSP = new ThreeBSP(cube)
 
+        // BSP去差值
         var resultBSP = sphereBSP.subtract(cubeBSP)
 
         var result = resultBSP.toMesh()
 
+        // 从BSP对象内获取到处理完后的mesh模型数据
         result.geometry.computeFaceNormals()
         result.geometry.computeVertexNormals()
 
+        // 重新赋值一个纹理
         var material = new THREE.MeshPhongMaterial({ color: 0x00ffff })
         result.material = material
 

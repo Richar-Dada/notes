@@ -82,6 +82,7 @@
         // 跟MeshBasicMaterial相比，对光做出反应 可以模拟一些表面（木材或石头）
         // meshMaterial = new THREE.MeshLambertMaterial({ color: 0x00ffff })
 
+        // 自发光的材料
         meshMaterial = new THREE.MeshPhongMaterial({ color: 0xeeeeee })
         var sphere = new THREE.Mesh(sphereGeometry, meshMaterial)
         sphere.position.set(-20, 20, 0)
