@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<style type="text/css">
+    * {
+        padding: 0;
+        margin: 0;
+    }
+
+    html,body {
+        height: 100%;
+    }
+
+    .wrapper {
+        height: 100%;
+    }
+
+    .content {
+        min-height: calc(100% - 100px);
+        overflow: scroll;
+    }
+
+    ul {
+        list-style: none;
+    }
+
+    li {
+        height: 100px;
+        background: lightblue;
+    }
+
+    .footer {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 100px;
+        background: orange;
+    }
+</style>
+<body>
+    
+    <div class="wrapper">
+        <div class="content">
+            <ul>
+            <li>1.这是内容，这是内容……</li>
+            <li>2.这是内容，这是内容……</li>
+            <li>3.这是内容，这是内容……</li>
+            <li>4.这是内容，这是内容……</li>
+            <li>5.这是内容，这是内容……</li>
+            <li>6.这是内容，这是内容……</li>
+            <li>7.这是内容，这是内容……</li>
+            <li>8.这是内容，这是内容……</li>
+            <li>9.这是内容，这是内容……</li>
+            </ul>
+        </div>
+        <div class="footer">
+            <!-- 需要做到吸底的区域 -->
+            底部按钮
+        </div>
+    </div>
+</body>
+</html>
