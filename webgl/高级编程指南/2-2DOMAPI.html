@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script id="shader-vs" type="x-shader/x-vertex">
+        attribute vec3 aVertexPosition;
+
+        void main() {
+            gl_Position = vec4(aVertexPosition, 1.0);
+        }
+    </script>
+
+    <script id="shader-fs" type="x-shader/x-fragment">
+        precision mediump float;
+
+        void main() {
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+        }
+    </script>
+
+    <script src="./js/webgl-debug.js"></script>
+
+    <script type="text/javascript">
+        var gl
+        var canvas
+        var shaderProgram
+        var vertexBuffer
+
+        function createGLContext(canvas) {
+            var names = ["webgl", "experimental-webgl"]
+            var context = null
+            for (var i = 0; i < names.length; i++) {
+                try {
+                    context = canvas.getContext(names[i])
+                } catch(e) {}
+
+                if (context) {
+                        break
+                }
+            }
+
+            if (context) {
+                context.viewportWidth = canvas.width
+                context.viewportHeight = canvas.height
+            } else {
+                alert(" Failed to create WebGL context ")
+            }
+            return context
+        }
+
+        function loadShaderFromDOM(id) {
+            var shaderScript = document.getElementById(id)
+
+            if (!shaderScript) {
+                return null
+            }
+
+            var shaderSource = ''
+            var currentChild = shaderScript.firstChild
+            while (currentChild) {
+                if (currentChild.nodeType === 3) {
+                    shaderSource += currentChild.textContent
+                }
+                currentChild = currentChild.nextSibling
+            }
+
+            var shader
+            if (shaderScript.type == 'x-shader/x-fragment') {
+                shader = gl.createShader(gl.FRAGMENT_SHADER)
+            } else if (shaderScript.type == 'x-shader/x-vertex') {
+                shader = gl.createShader(gl.VERTEX_SHADER)
+            } else {
+                return null
+            }
+
+            gl.shaderSource(shader, shaderSource)
+            gl.compileShader(shader)
+
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                alert(gl.getShaderInfoLog(shader))
+                return null
+            }
+            return shader
+        }
+
+        function setupShaders() {
+            vertexShader = loadShaderFromDOM('shader-vs')
+            fragmentShader = loadShaderFromDOM('shader-fs')
+
+            // 创建shader实例
+            shaderProgram = gl.createProgram()
+            gl.attachShader(shaderProgram, vertexShader)    // 加载顶点着色器代码
+            gl.attachShader(shaderProgram, fragmentShader)  // 加载片段着色器代码
+            gl.linkProgram(shaderProgram)  // shader与代码连接
+
+            if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+                alert('Failed to setup shaders')
+            }
+
+            gl.useProgram(shaderProgram)  // 使用shader
+
+            shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, 'aVertexPosition') // 设置shader顶点传值字段
+        }
+
+        function setupBuffers() {
+            vertexBuffer = gl.createBuffer()
+            gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer)
+            var triangleVertices = [
+                0.0, 0.5, 0.0,
+                -0.5, -0.5, 0.0,
+                0.5, -0.5, 0.0
+            ]
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(triangleVertices), gl.STATIC_DRAW)
+            vertexBuffer.itemSize = 3
+            vertexBuffer.numberOfItems = 3
+        }
+
+        function draw() {
+            gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight)  // 设置视口
+            gl.clear(gl.COLOR_BUFFER_BIT)  // 情况画布
+
+            // 把buffer传入给shader   用vertexPositionAttribute接受
+            gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, vertexBuffer.itemSize, gl.FLOAT, false, 0, 0)
+            gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute)
+
+            // 绘制图形
+            gl.drawArrays(gl.TRIANGLES, 0, vertexBuffer.numberOfItems)
+        }
+
+        function startup() {
+            canvas = document.getElementById('myGLCanvas')
+            gl = WebGLDebugUtils.makeDebugContext(createGLContext(canvas))
+            setupShaders()             // 初始化shader
+            setupBuffers()             // 初始化buffer
+            gl.clearColor(0.0, 0.0, 0.0, 1.0)    // 设置情况画布颜色
+            draw()     // 绘制
+        }
+    </script>
+
+</head>
+<body onload="startup()">
+    <canvas id="myGLCanvas" width="500" height="500"></canvas>
+    
+</body>
+</html>
